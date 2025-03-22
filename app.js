@@ -180,3 +180,70 @@ function shuffle(array) {
 }
 
 window.onload = loadCards;
+
+
+// Save progress to localStorage
+function saveProgress() {
+  localStorage.setItem("flashcard_deck", JSON.stringify(deck));
+  localStorage.setItem("hard_queue", JSON.stringify(hardQueue));
+  localStorage.setItem("new_word_count", newWordCount);
+  localStorage.setItem("correct_count", correctCount);
+}
+
+// Load progress from localStorage if available
+function loadProgress() {
+  const savedDeck = localStorage.getItem("flashcard_deck");
+  const savedHardQueue = localStorage.getItem("hard_queue");
+  const savedNewWordCount = localStorage.getItem("new_word_count");
+  const savedCorrectCount = localStorage.getItem("correct_count");
+
+  if (savedDeck && savedHardQueue) {
+    deck = JSON.parse(savedDeck);
+    hardQueue = JSON.parse(savedHardQueue);
+    newWordCount = parseInt(savedNewWordCount) || 0;
+    correctCount = parseInt(savedCorrectCount) || 0;
+    totalCards = deck.length + hardQueue.length;
+    showNextCard();
+    updateStats();
+    return true;
+  }
+  return false;
+}
+
+// Clear saved progress
+function resetProgress() {
+  localStorage.removeItem("flashcard_deck");
+  localStorage.removeItem("hard_queue");
+  localStorage.removeItem("new_word_count");
+  localStorage.removeItem("correct_count");
+  window.location.reload();
+}
+
+// Hook saveProgress into existing functions
+function wrapWithSaveProgress(fn) {
+  return function(...args) {
+    fn.apply(this, args);
+    saveProgress();
+  };
+}
+
+// Hook key functions
+checkAnswer = wrapWithSaveProgress(checkAnswer);
+markAsHard = wrapWithSaveProgress(markAsHard);
+markAsEasy = wrapWithSaveProgress(markAsEasy);
+showNextCard = wrapWithSaveProgress(showNextCard);
+
+// Run load or fallback
+window.onload = () => {
+  if (!loadProgress()) {
+    loadCards();
+  }
+};
+
+// Add reset button behavior
+document.addEventListener("DOMContentLoaded", () => {
+  const resetBtn = document.getElementById("reset-btn");
+  if (resetBtn) {
+    resetBtn.addEventListener("click", resetProgress);
+  }
+});
