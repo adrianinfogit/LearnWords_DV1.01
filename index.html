@@ -9,9 +9,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>Language Flashcards</h1>
-
-    <!-- Progress container -->
+    <!-- Removed Title -->
     <div class="progress-container">
       <div class="progress-bar" id="progress-bar"></div>
     </div>
@@ -20,7 +18,6 @@
       <p id="original-word">Loading...</p>
       <p id="translated-word" style="display: none;"></p>
 
-      <!-- Audio controls -->
       <div class="audio-controls">
         <select id="language-select">
           <option value="fr-FR">French</option>
@@ -38,14 +35,14 @@
         <button id="next-btn" style="display: inline;"><i class="fas fa-arrow-right"></i> Next</button>
       </div>
       <p id="feedback"></p>
-
-      <!-- Stats display -->
+<button id="reset-btn" style="background-color: #ff9800; color: white; margin-top: 10px;"><i class="fas fa-undo"></i> Reset</button>
       <div class="stats">
         <span id="remaining-count">Cards remaining: 0</span>
         <span id="hard-count">Hard cards: 0</span>
       </div>
     </div>
   </div>
+  
   <script>
     let availableVoices = [];
 
@@ -62,10 +59,8 @@
 
       let voice = null;
       if (isIOS()) {
-        // iOS: explicitly avoid spelling voices by name
         voice = availableVoices.find(v => v.lang === langCode && !v.name.toLowerCase().includes('spell'));
       } else {
-        // Non-iOS: just match by lang
         voice = availableVoices.find(v => v.lang === langCode);
       }
 
@@ -101,6 +96,7 @@
       }
     });
   </script>
+
   <script src="app.js"></script>
 </body>
 </html>
