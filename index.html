@@ -22,8 +22,10 @@
 
       <!-- Audio controls -->
       <div class="audio-controls">
-        <label for="voice-select">Choose Voice:</label>
-        <select id="voice-select"></select>
+        <select id="language-select">
+          <option value="fr-FR">French</option>
+          <option value="en-US">English</option>
+        </select>
         <button id="pronounce-btn"><i class="fas fa-volume-up"></i> Pronounce</button>
       </div>
 
@@ -47,45 +49,56 @@
   <script>
     let availableVoices = [];
 
-    function speakText(text, voiceName) {
+    function isIOS() {
+      return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    }
+
+    function speakText(text, langCode) {
       if (speechSynthesis.speaking) {
         speechSynthesis.cancel();
       }
 
       const utterance = new SpeechSynthesisUtterance(text);
-      const selectedVoice = availableVoices.find(v => v.name === voiceName);
-      if (selectedVoice) {
-        utterance.voice = selectedVoice;
+
+      let voice = null;
+      if (isIOS()) {
+        // iOS: explicitly avoid spelling voices by name
+        voice = availableVoices.find(v => v.lang === langCode && !v.name.toLowerCase().includes('spell'));
+      } else {
+        // Non-iOS: just match by lang
+        voice = availableVoices.find(v => v.lang === langCode);
+      }
+
+      if (!voice) {
+        voice = availableVoices.find(v => v.lang.startsWith(langCode.split('-')[0]));
+      }
+
+      if (voice) {
+        utterance.voice = voice;
+      } else {
+        utterance.lang = langCode;
       }
 
       speechSynthesis.speak(utterance);
     }
 
-    function populateVoiceList() {
+    function loadVoicesAndBind() {
       availableVoices = speechSynthesis.getVoices();
-      const voiceSelect = document.getElementById("voice-select");
-      voiceSelect.innerHTML = "";
+      const pronounceBtn = document.getElementById("pronounce-btn");
+      pronounceBtn.replaceWith(pronounceBtn.cloneNode(true));
 
-      availableVoices.forEach(voice => {
-        const option = document.createElement("option");
-        option.value = voice.name;
-        option.textContent = `${voice.name} (${voice.lang})`;
-        voiceSelect.appendChild(option);
+      document.getElementById("pronounce-btn").addEventListener("click", () => {
+        const lang = document.getElementById("language-select").value;
+        const text = document.getElementById("translated-word").textContent.trim();
+        speakText(text, lang);
       });
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-      populateVoiceList();
-
+      loadVoicesAndBind();
       if (speechSynthesis.onvoiceschanged !== undefined) {
-        speechSynthesis.onvoiceschanged = populateVoiceList;
+        speechSynthesis.onvoiceschanged = loadVoicesAndBind;
       }
-
-      document.getElementById("pronounce-btn").addEventListener("click", () => {
-        const selectedVoiceName = document.getElementById("voice-select").value;
-        const text = document.getElementById("translated-word").textContent.trim();
-        speakText(text, selectedVoiceName);
-      });
     });
   </script>
   <script src="app.js"></script>
