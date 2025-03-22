@@ -47,25 +47,37 @@
     </div>
   </div>
   <script>
-    // Speech functionality
+    let availableVoices = [];
+
     function speakText(text, langCode) {
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = langCode;
-      const voices = speechSynthesis.getVoices();
-      const matchedVoice = voices.find(voice => voice.lang === langCode);
-      if (matchedVoice) utterance.voice = matchedVoice;
+
+      const voice = availableVoices.find(v => v.lang === langCode && !v.name.toLowerCase().includes('spell'))
+                   || availableVoices.find(v => v.lang.startsWith(langCode.split('-')[0]));
+
+      if (voice) {
+        utterance.voice = voice;
+      } else {
+        utterance.lang = langCode;
+      }
+
       speechSynthesis.speak(utterance);
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
+    function loadVoicesAndBind() {
+      availableVoices = speechSynthesis.getVoices();
       document.getElementById("pronounce-btn").addEventListener("click", () => {
         const lang = document.getElementById("language-select").value;
         const text = document.getElementById("translated-word").textContent.trim();
         speakText(text, lang);
       });
+    }
 
-      // To ensure voices load in Chrome
-      speechSynthesis.onvoiceschanged = () => {};
+    document.addEventListener("DOMContentLoaded", () => {
+      loadVoicesAndBind();
+      if (speechSynthesis.onvoiceschanged !== undefined) {
+        speechSynthesis.onvoiceschanged = loadVoicesAndBind;
+      }
     });
   </script>
   <script src="app.js"></script>
