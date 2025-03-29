@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flashcard Learner V3.0 (Reliable Pronounce)</title> <!-- Version Bump -->
     <style>
         /* --- General Layout & Body --- */
         body {
@@ -223,8 +222,6 @@
         #again-btn:hover:not(:disabled) { background-color: #c82333; opacity: 1; }
         #hard-btn { background-color: #ffc107; color: #333; }
         #hard-btn:hover:not(:disabled) { background-color: #e0a800; opacity: 1; }
-        #good-btn { background-color: #28a745; }
-        #good-btn:hover:not(:disabled) { background-color: #218838; opacity: 1; }
         #easy-btn { background-color: #17a2b8; }
         #easy-btn:hover:not(:disabled) { background-color: #138496; opacity: 1; }
 
@@ -257,7 +254,6 @@
 <body>
 
     <div id="app-container">
-        <h1>Flashcard Learner</h1>
         <div id="loading-error" class="hidden"></div>
 
         <div id="controls" class="hidden">
@@ -288,10 +284,15 @@
             </div>
 
             <div id="assessment-buttons" class="button-container hidden">
-                <div class="button-with-label"><span class="time-label"><1m</span><button id="again-btn">Again</button></div>
-                <div class="button-with-label"><span class="time-label"><6m</span><button id="hard-btn">Hard</button></div>
-                <div class="button-with-label"><span class="time-label"><10m</span><button id="good-btn">Good</button></div>
-                <div class="button-with-label"><span class="time-label">4d</span><button id="easy-btn">Easy</button></div>
+                <div class="button-with-label">
+                    <button id="again-btn">Again</button>
+                </div>
+                <div class="button-with-label">
+                    <button id="hard-btn">Hard</button>
+                </div>
+                <div class="button-with-label">
+                    <button id="easy-btn">Easy</button>
+                </div>
             </div>
         </div>
 
@@ -311,7 +312,9 @@
                 CARDS_LENGTH: 'flashcard_cardsLength'
             };
             const PRONUNCIATION_LANG_KEY = 'flashcard_pronunciationLang';
-            const AGAIN_OFFSET = 1; const HARD_OFFSET = 5; const GOOD_OFFSET = 10;
+            const AGAIN_OFFSET = 3; // Repeat after 3 cards
+            const HARD_OFFSET = 7;  // Repeat after 7 cards
+ 
 
             // --- DOM Elements ---
             const loadingErrorEl = document.getElementById('loading-error');
@@ -328,7 +331,6 @@
             const assessmentButtons = document.getElementById('assessment-buttons');
             const againBtn = document.getElementById('again-btn');
             const hardBtn = document.getElementById('hard-btn');
-            const goodBtn = document.getElementById('good-btn');
             const easyBtn = document.getElementById('easy-btn');
             const statusMessage = document.getElementById('status-message');
             const sessionCompleteMessage = document.getElementById('session-complete');
@@ -652,7 +654,6 @@
             // Assessment Buttons
             againBtn.addEventListener('click', () => repeatCardLater(AGAIN_OFFSET));
             hardBtn.addEventListener('click', () => repeatCardLater(HARD_OFFSET));
-            goodBtn.addEventListener('click', () => repeatCardLater(GOOD_OFFSET));
             easyBtn.addEventListener('click', moveToNextCard);
 
             // New Session Button
