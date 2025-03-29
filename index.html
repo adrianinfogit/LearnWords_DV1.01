@@ -66,8 +66,12 @@
         /* Style for the new pronunciation controls container */
         .pronunciation-controls {
             display: flex;
+            flex-direction: row; /* Ensure horizontal layout */
             align-items: center;
-            gap: 8px; /* Space within the pronunciation controls */
+            gap: 8px; /* Space between elements */
+            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+            justify-content: center; /* Center the controls */
+            margin-top: 10px; /* Add spacing for better visibility */
         }
 
         /* Style the dropdown */
