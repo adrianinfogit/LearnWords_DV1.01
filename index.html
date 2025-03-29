@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flashcard Learner V2.3 (ARIA Removed)</title>
+    <title>Flashcard Learner V2.5 (Pronounce Translated)</title>
     <style>
         /* --- General Layout & Body --- */
         body {
@@ -23,7 +23,7 @@
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             width: 90%;
-            max-width: 500px;
+            max-width: 500px; /* Adjusted max-width slightly */
             text-align: center;
         }
 
@@ -43,6 +43,7 @@
             margin-top: 20px;
             font-style: italic;
             color: #666;
+            min-height: 1.2em; /* Ensure space for messages */
         }
 
         #session-complete {
@@ -55,7 +56,59 @@
         /* --- Controls --- */
         #controls {
             margin-bottom: 20px;
+            display: flex; /* Use flexbox for alignment */
+            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+            justify-content: center; /* Center items */
+            align-items: center; /* Vertically align items */
+            gap: 15px; /* Space between controls */
         }
+
+        /* Style for the new pronunciation controls container */
+        .pronunciation-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px; /* Space within the pronunciation controls */
+        }
+
+        /* Style the dropdown */
+        #language-select {
+            padding: 5px 8px;
+            font-size: 0.9em;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: white; /* Ensure background color */
+            cursor: pointer;
+        }
+
+        /* Style the pronounce button */
+        #pronounce-btn {
+            padding: 5px 10px;
+            font-size: 1.2em; /* Adjust size for emoji if needed */
+            line-height: 1; /* Ensure button height fits content */
+            background-color: #17a2b8; /* Example color */
+            min-width: 40px; /* Ensure minimum width */
+            color: white; /* Ensure text/emoji is visible */
+            border: none; /* Added */
+            border-radius: 4px; /* Added */
+        }
+        #pronounce-btn:hover:not(:disabled) {
+             background-color: #138496;
+             opacity: 1;
+        }
+        #pronounce-btn:disabled {
+            background-color: #ccc; /* Consistent disabled style */
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* Style for the error indicator */
+        #pronounce-error {
+            font-size: 1.2em;
+            color: #dc3545; /* Red color for error */
+            font-weight: bold;
+            cursor: help; /* Indicate it's informative */
+        }
+
 
         /* --- Card Area --- */
         #card-area {
@@ -137,11 +190,11 @@
             padding: 10px 20px;
             font-size: 1em;
             border: none;
-            border-radius: 5px;
+            border-radius: 5px; /* Default slightly rounded */
             cursor: pointer;
             transition: background-color 0.2s ease;
             color: white;
-            background-color: #007bff;
+            background-color: #007bff; /* Default blue */
         }
         button:hover:not(:disabled) {
             opacity: 0.9;
@@ -152,43 +205,60 @@
             opacity: 0.7;
         }
 
-        /* Specific Button Colors */
-        #check-answer-btn { background-color: #007bff; }
-        #check-answer-btn:hover:not(:disabled) { background-color: #0056b3; opacity: 1; }
-
+        /* Specific Button Styles */
         #assessment-buttons button {
+             border-radius: 20px; /* Squircle shape for assessment */
              color: white;
         }
         #again-btn { background-color: #dc3545; }
         #again-btn:hover:not(:disabled) { background-color: #c82333; opacity: 1; }
         #hard-btn { background-color: #ffc107; color: #333; }
         #hard-btn:hover:not(:disabled) { background-color: #e0a800; opacity: 1; }
-        #good-btn { background-color: #28a745; }
-        #good-btn:hover:not(:disabled) { background-color: #218838; opacity: 1; }
         #easy-btn { background-color: #17a2b8; }
         #easy-btn:hover:not(:disabled) { background-color: #138496; opacity: 1; }
 
-        #new-session-btn {
-             background-color: #6c757d;
-             margin-top: 10px;
+        /* Removed the Good button styles */
+        #good-btn {
+            background-color: #28a745;
+        }
+        #good-btn:hover:not(:disabled) {
+            background-color: #218838;
+            opacity: 1;
+        }
+
+        #check-answer-btn { /* Small utility button */
+            background-color: #007bff;
+            color: white;
+            padding: 5px 10px;
+            font-size: 0.8em;
+            border-radius: 5px;
+            margin-top: 5px; /* Spacing */
+        }
+        #check-answer-btn:hover:not(:disabled) {
+            background-color: #0056b3;
+            opacity: 1;
+        }
+
+        #new-session-btn { /* Small utility button */
+            background-color: #6c757d;
+            color: white;
+            padding: 5px 10px;
+            font-size: 0.8em;
+            border-radius: 5px;
         }
          #new-session-btn:hover:not(:disabled) {
              background-color: #5a6268;
              opacity: 1;
          }
 
-        #show-answer-btn {
+        #show-answer-btn { /* Normal button style */
             background-color: #6c757d;
             color: white;
-            margin-top: 10px;
+            /* Removed margin-top to rely on flex gap */
             padding: 10px 20px;
             font-size: 1em;
-            border: none;
             border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
         }
-
         #show-answer-btn:hover:not(:disabled) {
             background-color: #5a6268;
             opacity: 1;
@@ -197,6 +267,19 @@
         /* --- Utility Classes --- */
         .hidden {
             display: none !important;
+        }
+
+        /* Class to visually hide labels but keep them for screen readers */
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
         }
 
         .button-with-label {
@@ -209,17 +292,30 @@
         .time-label {
             font-size: 0.8em;
             color: #666;
-            margin-bottom: 5px;
+            margin-bottom: 0; /* Removed bottom margin, rely on gap */
+            line-height: 1; /* Ensure compact */
         }
     </style>
 </head>
 <body>
 
     <div id="app-container">
-        <div id="loading-error" class="hidden"></div> 
+        <h1>Flashcard Learner</h1>
+        <div id="loading-error" class="hidden"></div>
 
         <div id="controls" class="hidden">
              <button id="new-session-btn">Start New Session</button>
+             <!-- === Pronunciation Controls START === -->
+             <div class="pronunciation-controls">
+                 <label for="language-select" class="visually-hidden">Pronunciation Language:</label>
+                 <select id="language-select">
+                     <option value="fr">French</option>
+                     <option value="en">English</option>
+                 </select>
+                 <button id="pronounce-btn" title="Pronounce Translated Word" disabled>🔊</button> <!-- Updated title -->
+                 <span id="pronounce-error" class="hidden" title="Speech synthesis unavailable or voice not found">❓</span>
+             </div>
+             <!-- === Pronunciation Controls END === -->
         </div>
 
         <div id="card-area" class="hidden">
@@ -227,25 +323,24 @@
                 <div id="foreign-word"></div>
                 <div id="translation"></div>
                 <div id="answer-input-area">
-                     <input type="text" id="answer-input" placeholder="Type the translation..."> 
-                     <div id="feedback"></div> 
-                     <button id="check-answer-btn">Check Typing</button> <!-- Renamed -->
-                     <button id="show-answer-btn">Show Answer</button> <!-- New button -->
+                     <input type="text" id="answer-input" placeholder="Type the translation...">
+                     <!-- Added a container for the check/show buttons -->
+                     <div class="button-container" style="margin-top: 0;">
+                        <button id="check-answer-btn">Check Typing</button>
+                     </div>
+                     <button id="show-answer-btn">Show Answer</button>
+                     <div id="feedback"></div>
                 </div>
             </div>
 
             <div id="assessment-buttons" class="button-container hidden">
                 <div class="button-with-label">
-                    <span class="time-label">&lt;1m</span>
+                    <span class="time-label"><1m</span>
                     <button id="again-btn">Again</button>
                 </div>
                 <div class="button-with-label">
-                    <span class="time-label">&lt;6m</span>
+                    <span class="time-label"><6m</span>
                     <button id="hard-btn">Hard</button>
-                </div>
-                <div class="button-with-label">
-                    <span class="time-label">&lt;10m</span>
-                    <button id="good-btn">Good</button>
                 </div>
                 <div class="button-with-label">
                     <span class="time-label">4d</span>
@@ -254,7 +349,7 @@
             </div>
         </div>
 
-        <div id="status-message">Loading words...</div> 
+        <div id="status-message">Loading words...</div>
 
         <div id="session-complete" class="hidden">
             🎉 Session Complete! Use "Start New Session" to go again. 🎉
@@ -270,8 +365,12 @@
             const LOCAL_STORAGE_KEYS = {
                 SHUFFLED_INDICES: 'flashcard_shuffledIndices',
                 CURRENT_INDEX: 'flashcard_currentIndex',
-                CARDS_LENGTH: 'flashcard_cardsLength' // Store length to invalidate progress if deck changes
+                CARDS_LENGTH: 'flashcard_cardsLength'
             };
+            const PRONUNCIATION_LANG_KEY = 'flashcard_pronunciationLang'; // For saving language preference
+            // --- New constants for repetition offsets ---
+            const AGAIN_OFFSET = 2; // Repeat after approx 2 cards
+            const HARD_OFFSET = 7;  // Repeat after approx 5 cards
 
             // --- DOM Elements ---
             const loadingErrorEl = document.getElementById('loading-error');
@@ -284,27 +383,171 @@
             const feedbackEl = document.getElementById('feedback');
             const translationEl = document.getElementById('translation');
             const checkAnswerBtn = document.getElementById('check-answer-btn');
-            const showAnswerBtn = document.getElementById('show-answer-btn'); // New button
+            const showAnswerBtn = document.getElementById('show-answer-btn');
             const assessmentButtons = document.getElementById('assessment-buttons');
             const againBtn = document.getElementById('again-btn');
             const hardBtn = document.getElementById('hard-btn');
-            const goodBtn = document.getElementById('good-btn');
             const easyBtn = document.getElementById('easy-btn');
             const statusMessage = document.getElementById('status-message');
             const sessionCompleteMessage = document.getElementById('session-complete');
+
+            // --- Pronunciation Elements ---
+            const languageSelect = document.getElementById('language-select');
+            const pronounceBtn = document.getElementById('pronounce-btn');
+            const pronounceError = document.getElementById('pronounce-error');
+            const pronunciationControls = document.querySelector('.pronunciation-controls'); // Get the container
 
             // --- State Variables ---
             let cards = [];
             let shuffledIndices = [];
             let currentCardIndex = 0;
             let currentCardData = null;
+            let selectedLang = 'fr'; // Default language
+            let synth = window.speechSynthesis; // Speech Synthesis API
+            let voices = []; // To store available voices
+
+            // --- Speech Synthesis Functions ---
+
+            function populateVoiceList() {
+                if (!synth) return;
+                voices = synth.getVoices();
+                 checkVoiceAvailability(selectedLang);
+            }
+
+            function findVoice(langCode) {
+                if (!voices || voices.length === 0) {
+                    return null;
+                }
+                const langPrefix = langCode + '-';
+                let voice = voices.find(v => v.lang.startsWith(langPrefix));
+                if (voice) return voice;
+                voice = voices.find(v => v.lang === langCode);
+                return voice || null;
+            }
+
+            function checkVoiceAvailability(langCode) {
+                 if (!synth) return false;
+
+                 const voice = findVoice(langCode);
+                 const hasAnyVoices = voices && voices.length > 0;
+                 const canEnable = currentCardData !== null;
+
+                 if (voice) {
+                     pronounceError.classList.add('hidden');
+                     pronounceBtn.disabled = !canEnable;
+                     return true;
+                 } else if (hasAnyVoices) {
+                     console.warn(`No specific voice found for ${langCode}, but other voices exist. Fallback might work.`);
+                     pronounceError.classList.add('hidden');
+                     pronounceBtn.disabled = !canEnable;
+                     return true;
+                 } else {
+                     console.error(`No voice found for language code '${langCode}' and no voices seem to be available.`);
+                     showPronunciationError(`No voice available for ${langCode === 'fr' ? 'French' : 'English'}`);
+                     pronounceBtn.disabled = true;
+                     return false;
+                 }
+             }
+
+            function pronounceWord(text) {
+                if (!synth || !text || pronounceBtn.disabled) {
+                    console.warn("Pronounce called but synth not ready, no text, or button disabled.");
+                    return;
+                }
+                synth.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                const voice = findVoice(selectedLang);
+
+                if (voice) {
+                    utterance.voice = voice;
+                    utterance.lang = voice.lang;
+                    console.log(`Speaking "${text}" using voice: ${voice.name} (${voice.lang})`);
+                } else {
+                    utterance.lang = selectedLang;
+                    console.warn(`No specific voice found for ${selectedLang}. Attempting default fallback.`);
+                }
+
+                utterance.onerror = (event) => {
+                    console.error('SpeechSynthesisUtterance.onerror', event);
+                    showPronunciationError(`Speech error: ${event.error}`);
+                };
+                 utterance.onend = () => { /* Optional */ };
+                 pronounceError.classList.add('hidden');
+                 synth.speak(utterance);
+            }
+
+            function showPronunciationError(message = "Speech synthesis unavailable or voice not found") {
+                 console.warn("Pronunciation Error:", message);
+                 if (pronounceError) {
+                     pronounceError.classList.remove('hidden');
+                     pronounceError.title = message;
+                 }
+                 if (pronounceBtn) pronounceBtn.disabled = true;
+            }
+
+            function initializeSpeechSynthesis() {
+                 if (pronunciationControls) pronunciationControls.style.display = 'none';
+
+                 if ('speechSynthesis' in window) {
+                    synth = window.speechSynthesis;
+                    const savedLang = localStorage.getItem(PRONUNCIATION_LANG_KEY);
+                    if (savedLang && (savedLang === 'en' || savedLang === 'fr')) {
+                        selectedLang = savedLang;
+                    }
+                    languageSelect.value = selectedLang;
+
+                    languageSelect.addEventListener('change', (event) => {
+                        selectedLang = event.target.value;
+                        localStorage.setItem(PRONUNCIATION_LANG_KEY, selectedLang);
+                        checkVoiceAvailability(selectedLang);
+                        console.log("Pronunciation language changed to:", selectedLang);
+                    });
+
+                    pronounceBtn.addEventListener('click', () => {
+                         if (currentCardData && currentCardData.translated) {
+                             pronounceWord(currentCardData.translated);
+                         } else {
+                             console.warn("Pronounce button clicked, but no current card data or translation available.");
+                         }
+                    });
+
+                     if (synth.onvoiceschanged !== undefined) {
+                         synth.onvoiceschanged = () => {
+                             populateVoiceList();
+                             if (voices.length > 0 && pronunciationControls.style.display === 'none') {
+                                pronunciationControls.style.display = 'flex';
+                             }
+                         };
+                     }
+
+                     populateVoiceList(); // Initial attempt
+
+                     if (voices.length > 0) {
+                         pronunciationControls.style.display = 'flex';
+                         checkVoiceAvailability(selectedLang);
+                     } else {
+                         console.log("Voices not immediately available, waiting for onvoiceschanged or timeout.");
+                         setTimeout(() => {
+                             populateVoiceList();
+                             if (voices.length > 0) {
+                                 console.log("Voices loaded after timeout.");
+                                 pronunciationControls.style.display = 'flex';
+                                 checkVoiceAvailability(selectedLang);
+                             } else {
+                                 console.warn("No speech synthesis voices found after delay.");
+                                 showPronunciationError("No speech synthesis voices found in this browser.");
+                             }
+                         }, 750);
+                     }
+                } else {
+                    console.warn("Speech Synthesis API not supported by this browser.");
+                    statusMessage.textContent += " (Pronunciation not supported)";
+                }
+            }
+
 
             // --- Core Functions ---
 
-            /**
-             * Shuffles an array in place using the Fisher-Yates algorithm.
-             * @param {Array} array The array to shuffle.
-             */
             function shuffleArray(array) {
                 for (let i = array.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
@@ -312,26 +555,19 @@
                 }
             }
 
-            /**
-            * Saves the current review session progress to localStorage.
-            */
             function saveProgress() {
                 try {
-                    const nextIndexToSave = (currentCardIndex < shuffledIndices.length) ? currentCardIndex : shuffledIndices.length;
+                    const indexToSave = currentCardIndex >= shuffledIndices.length ? shuffledIndices.length : currentCardIndex;
                     localStorage.setItem(LOCAL_STORAGE_KEYS.SHUFFLED_INDICES, JSON.stringify(shuffledIndices));
-                    localStorage.setItem(LOCAL_STORAGE_KEYS.CURRENT_INDEX, nextIndexToSave.toString());
+                    localStorage.setItem(LOCAL_STORAGE_KEYS.CURRENT_INDEX, indexToSave.toString());
                     localStorage.setItem(LOCAL_STORAGE_KEYS.CARDS_LENGTH, cards.length.toString());
+                    // console.log('Progress saved. Index:', indexToSave, 'Shuffled length:', shuffledIndices.length); // Debugging log
                 } catch (error) {
                     console.error("Error saving progress to localStorage:", error);
                     statusMessage.textContent = "Warning: Could not save progress.";
                 }
             }
 
-            /**
-            * Attempts to load review session progress from localStorage.
-            * Validates progress against the current number of loaded cards.
-            * @returns {boolean} True if valid progress was loaded, false otherwise.
-            */
             function loadProgress() {
                 try {
                     const savedIndices = localStorage.getItem(LOCAL_STORAGE_KEYS.SHUFFLED_INDICES);
@@ -343,30 +579,33 @@
                         const parsedIndex = parseInt(savedIndex, 10);
                         const parsedLength = parseInt(savedLength, 10);
 
+                        // Validate progress against current cards and index boundaries
                         if (Array.isArray(parsedIndices) &&
                             !isNaN(parsedIndex) &&
                             !isNaN(parsedLength) &&
-                            parsedLength === cards.length &&
-                            parsedIndex >= 0 && parsedIndex <= cards.length &&
-                            parsedIndices.length === cards.length) {
-
+                            parsedLength === cards.length &&       // Must match the number of cards loaded NOW
+                            parsedIndex >= 0 &&
+                            parsedIndex <= parsedIndices.length && // Index can be at the end (completed)
+                            // Check if all indices in the saved array are valid card indices for the *current* deck
+                            parsedIndices.every(idx => typeof idx === 'number' && idx >= 0 && idx < cards.length))
+                           {
                             shuffledIndices = parsedIndices;
                             currentCardIndex = parsedIndex;
-                            console.log(`Progress loaded. Resuming at index ${currentCardIndex} of ${cards.length}`);
+                            console.log(`Progress loaded. Resuming at index ${currentCardIndex} of ${shuffledIndices.length} cards in queue.`);
                             return true;
                         } else {
-                            console.warn("Saved progress is invalid or for a different deck size. Clearing it.");
+                            console.warn("Saved progress is invalid, mismatched deck size, or indices out of bounds. Clearing it.");
                             clearSavedProgress();
                         }
                     }
                 } catch (error) {
-                    console.error("Error loading progress from localStorage:", error);
+                    console.error("Error loading or parsing progress from localStorage:", error);
                     clearSavedProgress();
                 }
                 return false;
             }
 
-            /** Clears saved progress from localStorage. */
+
             function clearSavedProgress() {
                 try {
                     localStorage.removeItem(LOCAL_STORAGE_KEYS.SHUFFLED_INDICES);
@@ -378,102 +617,156 @@
                 }
             }
 
-            /** Updates the UI to display the current card or completion message. */
             function displayCard() {
-                // Reset UI state for a new card view
+                // Reset UI state
                 translationEl.style.display = 'none';
                 assessmentButtons.classList.add('hidden');
-                assessmentButtons.style.display = ''; // Reset potential direct style
+                assessmentButtons.style.display = ''; // Reset direct style if set
                 checkAnswerBtn.style.display = 'inline-block';
                 checkAnswerBtn.disabled = false;
-                showAnswerBtn.style.display = 'inline-block'; // Show new button
+                showAnswerBtn.style.display = 'inline-block';
                 answerInputArea.style.display = 'flex';
                 answerInput.value = '';
                 answerInput.disabled = false;
                 feedbackEl.textContent = '';
                 feedbackEl.className = 'feedback';
                 sessionCompleteMessage.classList.add('hidden');
+                 // Ensure check/show buttons parent is visible if answer area is visible
+                checkAnswerBtn.parentElement.style.display = 'flex';
 
-                // Check if session is finished
+                // Check if session finished
                 if (currentCardIndex >= shuffledIndices.length) {
                     cardArea.classList.add('hidden');
                     controlsEl.classList.remove('hidden');
-                    statusMessage.textContent = `Finished reviewing ${cards.length} cards.`;
+                    statusMessage.textContent = `Finished reviewing all scheduled cards.`;
                     sessionCompleteMessage.classList.remove('hidden');
-                    saveProgress();
+                    if (pronounceBtn) pronounceBtn.disabled = true;
+                    currentCardData = null;
+                    saveProgress(); // Save the final completed state (index = length)
                     return;
                 }
 
-                // Get current card data
+                // Get current card's original index from the possibly modified shuffledIndices
                 const actualIndex = shuffledIndices[currentCardIndex];
+                 if (typeof actualIndex === 'undefined' || actualIndex < 0 || actualIndex >= cards.length) {
+                     console.error('Invalid index found in shuffledIndices:', actualIndex, 'at queue position', currentCardIndex);
+                     statusMessage.textContent = `Error: Invalid card sequence. Skipping.`;
+                     currentCardIndex++; // Try to recover by skipping
+                     saveProgress();
+                     displayCard(); // Try the next position
+                     return;
+                 }
                 currentCardData = cards[actualIndex];
 
                 // Validate card data
                 if (!currentCardData || typeof currentCardData.original === 'undefined' || typeof currentCardData.translated === 'undefined') {
-                    console.error('Invalid card data encountered:', currentCardData, 'at shuffled index', currentCardIndex, '(original index', actualIndex, ')');
-                    statusMessage.textContent = `Error: Invalid card data. Skipping.`;
-                    currentCardIndex++;
+                    console.error('Invalid card data loaded:', currentCardData, 'for original index', actualIndex);
+                    statusMessage.textContent = `Error: Invalid card content. Skipping.`;
+                    if (pronounceBtn) pronounceBtn.disabled = true;
+                    currentCardIndex++; // Try to recover
                     saveProgress();
-                    displayCard();
+                    displayCard(); // Try the next position
                     return;
                 }
 
-                // Display the card content
+                // Display card content
                 foreignWordEl.textContent = currentCardData.original;
                 translationEl.textContent = currentCardData.translated;
 
-                // Show card area and update status
                 cardArea.classList.remove('hidden');
                 controlsEl.classList.remove('hidden');
-                statusMessage.textContent = `Card ${currentCardIndex + 1} of ${cards.length}`;
+                 // Update status based on the length of the remaining queue
+                statusMessage.textContent = `Card ${currentCardIndex + 1} of ${shuffledIndices.length} in current queue.`;
                 answerInput.focus();
+
+                 if (synth) {
+                    checkVoiceAvailability(selectedLang);
+                 } else {
+                     if (pronounceBtn) pronounceBtn.disabled = true;
+                 }
             }
 
-            /** Handles checking the user's typed answer against the correct translation. */
             function checkAnswer() {
                 if (!currentCardData) return;
 
                 const userAnswer = answerInput.value.trim().toLowerCase();
                 const correctAnswer = currentCardData.translated.trim().toLowerCase();
 
-                // Update UI to show feedback and answer
                 answerInput.disabled = true;
-                checkAnswerBtn.style.display = 'none';
-                showAnswerBtn.style.display = 'none'; // Hide new button
+                checkAnswerBtn.style.display = 'none'; // Hide check button
+                showAnswerBtn.style.display = 'none'; // Hide show button
+                checkAnswerBtn.parentElement.style.display = 'none'; // Hide their container too
 
                 if (userAnswer === correctAnswer) {
                     feedbackEl.textContent = "Correct!";
-                    feedbackEl.className = 'feedback correct';
+                    feedbackEl.className = 'feedback correct'; // Apply the 'correct' class for green text
                 } else {
                     feedbackEl.textContent = `Incorrect. Correct: ${currentCardData.translated}`;
-                    feedbackEl.className = 'feedback incorrect';
+                    feedbackEl.className = 'feedback incorrect'; // Apply the 'incorrect' class for red text
                 }
 
+                translationEl.textContent = currentCardData.translated;
                 translationEl.style.display = 'block';
                 assessmentButtons.classList.remove('hidden');
-                assessmentButtons.style.display = 'flex';
+                assessmentButtons.style.display = 'flex'; // Make assessment visible
             }
 
-            /** Handles showing the correct answer without checking the user's input. */
             function showAnswer() {
                 if (!currentCardData) return;
-
-                // Update UI to show the answer
                 answerInput.disabled = true;
-                checkAnswerBtn.style.display = 'none';
-                showAnswerBtn.style.display = 'none'; // Hide new button
+                checkAnswerBtn.style.display = 'none'; // Hide check button
+                showAnswerBtn.style.display = 'none'; // Hide show button
+                checkAnswerBtn.parentElement.style.display = 'none'; // Hide their container too
 
                 feedbackEl.textContent = `Correct: ${currentCardData.translated}`;
-                feedbackEl.className = 'feedback';
+                feedbackEl.className = 'feedback'; // Neutral feedback
+                translationEl.textContent = currentCardData.translated;
                 translationEl.style.display = 'block';
                 assessmentButtons.classList.remove('hidden');
-                assessmentButtons.style.display = 'flex';
+                assessmentButtons.style.display = 'flex'; // Make assessment visible
             }
 
-            /** Saves progress, increments card index, and displays the next card. */
-            function moveToNextCard() {
-                saveProgress();
+            /**
+             * Inserts the current card's original index back into the shuffledIndices array
+             * at a position determined by the offset, then moves to the next card.
+             * @param {number} offset - How many cards later to insert this card.
+             */
+            function repeatCardLater(offset) {
+                if (currentCardIndex >= shuffledIndices.length) {
+                    console.warn("Attempted to repeat card when already at end of queue.");
+                    moveToNextCard(); // Proceed to end the session
+                    return;
+                }
+
+                const cardToRepeatOriginalIndex = shuffledIndices[currentCardIndex];
+
+                // Calculate where to insert the index back into the queue
+                let insertionIndex = currentCardIndex + offset + 1;
+
+                // Ensure insertion point is not beyond the end of the current queue length
+                if (insertionIndex > shuffledIndices.length) {
+                    insertionIndex = shuffledIndices.length;
+                }
+
+                 // Insert the original index back into the array
+                 shuffledIndices.splice(insertionIndex, 0, cardToRepeatOriginalIndex);
+                 console.log(`Repeating card (original index ${cardToRepeatOriginalIndex}) at queue position ${insertionIndex}. New queue length: ${shuffledIndices.length}`);
+
+                // Now advance the current index to move past the card we just finished assessing
                 currentCardIndex++;
+                saveProgress(); // Save the updated queue and the *new* current index
+                displayCard(); // Display the *next* card in the (potentially modified) sequence
+            }
+
+
+            /** Saves progress, increments card index, and displays the next card. Used for 'Good' and 'Easy'. */
+            function moveToNextCard() {
+                if (currentCardIndex < shuffledIndices.length) {
+                     currentCardIndex++;
+                     // Save the incremented index immediately before showing the next card or finishing
+                     saveProgress();
+                }
+                // displayCard will handle showing the next card or the completion message
                 displayCard();
             }
 
@@ -489,24 +782,26 @@
                     return;
                 }
 
+                controlsEl.classList.remove('hidden'); // Show controls
+
                 if (forceNew) {
                     clearSavedProgress();
                 }
 
-                const resumed = !forceNew && loadProgress();
+                const resumed = !forceNew && loadProgress(); // loadProgress handles validation
 
                 if (!resumed) {
+                    // Start fresh if not resumed
                     currentCardIndex = 0;
-                    shuffledIndices = Array.from(cards.keys());
-                    shuffleArray(shuffledIndices);
-                    console.log("Starting a new review session.");
+                    shuffledIndices = Array.from(cards.keys()); // Creates [0, 1, 2, ...]
+                    shuffleArray(shuffledIndices); // Shuffles the indices
+                    console.log("Starting a new review session with shuffled indices:", shuffledIndices);
+                    saveProgress(); // Save the initial state of the new session
                 }
 
-                // Update UI
                 sessionCompleteMessage.classList.add('hidden');
                 statusMessage.textContent = `Loaded ${cards.length} cards. ${resumed ? 'Resuming session.' : 'Starting new session.'}`;
-                controlsEl.classList.remove('hidden');
-                displayCard();
+                displayCard(); // Display first (or resumed) card
             }
 
             /** Fetches words from JSON file and starts the session. */
@@ -514,77 +809,89 @@
                 statusMessage.textContent = `Loading words from ${WORDS_FILE_PATH}...`;
                 loadingErrorEl.classList.add('hidden');
                 cardArea.classList.add('hidden');
-                controlsEl.classList.add('hidden');
+                controlsEl.classList.add('hidden'); // Hide controls during load
+                 if (pronunciationControls) pronunciationControls.style.display = 'none'; // Hide pronunciation during load
 
                 try {
-                    const response = await fetch(WORDS_FILE_PATH, { cache: "no-store" });
+                    const response = await fetch(WORDS_FILE_PATH, { cache: "no-store" }); // Avoid caching words.json
                     if (!response.ok) {
-                        throw new Error(`HTTP error ${response.status}. Could not fetch '${WORDS_FILE_PATH}'. Check file location and network.`);
+                        throw new Error(`HTTP error ${response.status}. Could not fetch '${WORDS_FILE_PATH}'.`);
                     }
                     const jsonData = await response.json();
 
-                    // Validate JSON structure
                     if (!Array.isArray(jsonData)) {
                         throw new Error("JSON data is not an array.");
                     }
-                    if (jsonData.length > 0 && (typeof jsonData[0] !== 'object' || jsonData[0] === null || !jsonData[0].hasOwnProperty('original') || !jsonData[0].hasOwnProperty('translated'))) {
+                     // Basic validation of card structure
+                     const isValidStructure = jsonData.every(item => typeof item === 'object' && item !== null && 'original' in item && 'translated' in item);
+                     if (!isValidStructure && jsonData.length > 0) { // Only throw if array not empty but structure wrong
                         throw new Error("JSON objects missing 'original' or 'translated' keys.");
-                    }
+                     }
 
                     cards = jsonData;
-                    startReviewSession();
+                    startReviewSession(); // Let startReviewSession handle resuming or starting new
 
                 } catch (error) {
                     console.error("Error loading or parsing words.json:", error);
                     loadingErrorEl.textContent = `Error: ${error.message}`;
                     loadingErrorEl.classList.remove('hidden');
                     statusMessage.textContent = "Failed to load cards. Cannot start.";
-                    cards = [];
+                    cards = []; // Ensure cards array is empty on error
                     cardArea.classList.add('hidden');
                     controlsEl.classList.add('hidden');
+                     if (pronunciationControls) pronunciationControls.style.display = 'none'; // Keep hidden on error
                 }
             }
 
             // --- Event Listeners ---
-            document.addEventListener('DOMContentLoaded', loadWords);
-
-            checkAnswerBtn.addEventListener('click', checkAnswer);
-
-            showAnswerBtn.addEventListener('click', () => {
-                translationEl.style.display = 'block'; // Show the translation
-                feedbackEl.textContent = ''; // Clear feedback
-                assessmentButtons.classList.remove('hidden'); // Show assessment buttons
+            document.addEventListener('DOMContentLoaded', () => {
+                 initializeSpeechSynthesis(); // Init speech synth first
+                 loadWords(); // Then load data and potentially start session
             });
 
+            checkAnswerBtn.addEventListener('click', checkAnswer);
+            showAnswerBtn.addEventListener('click', showAnswer);
+
             answerInput.addEventListener('keypress', (event) => {
-                if (event.key === 'Enter' && !checkAnswerBtn.disabled && checkAnswerBtn.style.display !== 'none') {
+                // Only trigger check if input is enabled and Enter is pressed
+                if (event.key === 'Enter' && !answerInput.disabled && checkAnswerBtn.style.display !== 'none') {
                     checkAnswer();
                 }
             });
 
-            // Assessment buttons all trigger moving to the next card
+            // Assessment button listeners (MODIFIED)
             againBtn.addEventListener('click', () => {
                 console.log("Selected: Again (<1m)");
-                moveToNextCard();
+                repeatCardLater(AGAIN_OFFSET); // Repeat soon
             });
 
             hardBtn.addEventListener('click', () => {
                 console.log("Selected: Hard (<6m)");
-                moveToNextCard();
-            });
-
-            goodBtn.addEventListener('click', () => {
-                console.log("Selected: Good (<10m)");
-                moveToNextCard();
+                repeatCardLater(HARD_OFFSET); // Repeat later
             });
 
             easyBtn.addEventListener('click', () => {
                 console.log("Selected: Easy (4d)");
-                moveToNextCard();
+                moveToNextCard(); // Move to next unique card
             });
 
-            // New session button clears progress and restarts
+            // Removed the Good button event listener
+            goodBtn.addEventListener('click', () => {
+                console.log("Selected: Good (<10m)");
+                moveToNextCard(); // Move to next unique card
+            });
+
+            // New session button listener
             newSessionBtn.addEventListener('click', () => {
+                // Stop any ongoing speech synthesis
+                if (synth && synth.speaking) {
+                    synth.cancel();
+                }
+
+                // Clear all locally stored data
+                clearSavedProgress();
+
+                // Force start a new session
                 startReviewSession(true);
             });
 
