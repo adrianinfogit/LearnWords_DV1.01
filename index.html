@@ -278,6 +278,7 @@
                      <div class="button-container" style="margin-top: 0;">
                         <button id="check-answer-btn">Check Typing</button>
                      </div>
+                    <div style="margin-top: 10px;"></div>
                      <button id="show-answer-btn">Show Answer</button>
                      <div id="feedback"></div>
                 </div>
@@ -523,37 +524,59 @@
                 // Reset UI
                 translationEl.style.display = 'none'; // Hide translation
                 assessmentButtons.classList.add('hidden');
-                checkAnswerBtn.style.display = 'inline-block'; checkAnswerBtn.disabled = false;
+                checkAnswerBtn.style.display = 'inline-block';
+                checkAnswerBtn.disabled = false;
                 showAnswerBtn.style.display = 'inline-block';
                 answerInputArea.style.display = 'flex';
-                answerInput.value = ''; answerInput.disabled = false;
-                feedbackEl.textContent = ''; feedbackEl.className = 'feedback';
+                answerInput.value = '';
+                answerInput.disabled = false;
+                feedbackEl.textContent = '';
+                feedbackEl.className = 'feedback';
                 sessionCompleteMessage.classList.add('hidden');
                 checkAnswerBtn.parentElement.style.display = 'flex';
 
                 // --- Update Pronunciation State ---
-                // Button should be disabled because translation is hidden.
                 updatePronunciationControlsState();
-                // ---
 
                 if (currentCardIndex >= shuffledIndices.length) {
-                    cardArea.classList.add('hidden'); controlsEl.classList.remove('hidden');
+                    cardArea.classList.add('hidden');
+                    controlsEl.classList.remove('hidden');
                     statusMessage.textContent = `Finished reviewing all scheduled cards.`;
-                    sessionCompleteMessage.classList.remove('hidden'); currentCardData = null;
-                    updatePronunciationControlsState(); // Ensure button is disabled on completion
-                    saveProgress(); return;
+                    sessionCompleteMessage.classList.remove('hidden');
+                    currentCardData = null;
+                    updatePronunciationControlsState();
+                    saveProgress();
+                    return;
                 }
 
                 const actualIndex = shuffledIndices[currentCardIndex];
-                if (typeof actualIndex !== 'number' || actualIndex < 0 || actualIndex >= cards.length) { /* ... error handling ... */ console.error('Invalid index in shuffledIndices:', actualIndex, 'at pos', currentCardIndex); statusMessage.textContent = `Error: Invalid card sequence. Recovering...`; shuffledIndices.splice(currentCardIndex, 1); saveProgress(); displayCard(); return; }
+                if (typeof actualIndex !== 'number' || actualIndex < 0 || actualIndex >= cards.length) {
+                    console.error('Invalid index in shuffledIndices:', actualIndex, 'at pos', currentCardIndex);
+                    statusMessage.textContent = `Error: Invalid card sequence. Recovering...`;
+                    shuffledIndices.splice(currentCardIndex, 1);
+                    saveProgress();
+                    displayCard();
+                    return;
+                }
+
                 currentCardData = cards[actualIndex];
-                if (!currentCardData || typeof currentCardData.original !== 'string' || typeof currentCardData.translated !== 'string') { /* ... error handling ... */ console.error('Invalid card data:', currentCardData, 'at original index', actualIndex); statusMessage.textContent = `Error: Invalid card content. Skipping.`; currentCardIndex++; saveProgress(); displayCard(); return; }
+                if (!currentCardData || typeof currentCardData.original !== 'string' || typeof currentCardData.translated !== 'string') {
+                    console.error('Invalid card data:', currentCardData, 'at original index', actualIndex);
+                    statusMessage.textContent = `Error: Invalid card content. Skipping.`;
+                    currentCardIndex++;
+                    saveProgress();
+                    displayCard();
+                    return;
+                }
 
                 foreignWordEl.textContent = currentCardData.original;
                 translationEl.textContent = currentCardData.translated;
-                cardArea.classList.remove('hidden'); controlsEl.classList.remove('hidden');
+                cardArea.classList.remove('hidden');
+                controlsEl.classList.remove('hidden');
                 statusMessage.textContent = `Card ${currentCardIndex + 1} of ${shuffledIndices.length} in queue.`;
-                answerInput.focus();
+
+                // Removed focus on the typing field
+                // answerInput.focus();
             }
 
             function checkAnswer() {
