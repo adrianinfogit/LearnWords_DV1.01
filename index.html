@@ -1,102 +1,595 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Language Flashcards</title>
-  <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flashcard Learner V2.3 (ARIA Removed)</title>
+    <style>
+        /* --- General Layout & Body --- */
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+            line-height: 1.5;
+        }
+
+        #app-container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        h1 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        /* --- Error & Status Messages --- */
+        #loading-error {
+             color: red;
+             font-weight: bold;
+             margin-bottom: 15px;
+        }
+
+        #status-message {
+            margin-top: 20px;
+            font-style: italic;
+            color: #666;
+        }
+
+        #session-complete {
+            font-size: 1.2em;
+            color: #28a745;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        /* --- Controls --- */
+        #controls {
+            margin-bottom: 20px;
+        }
+
+        /* --- Card Area --- */
+        #card-area {
+            margin-top: 15px;
+        }
+
+        #card-display {
+            min-height: 150px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #foreign-word {
+            font-size: 1.5em; /* Match the size of #translation */
+            margin-bottom: 15px;
+            color: #0056b3;
+            word-break: break-word;
+        }
+
+        /* --- Answer Input & Feedback --- */
+        #answer-input-area {
+            margin-top: 10px;
+            margin-bottom: 15px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+         #answer-input {
+            padding: 10px;
+            font-size: 1em;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 80%;
+            box-sizing: border-box;
+         }
+         #answer-input:disabled {
+            background-color: #e9ecef;
+            opacity: 0.8;
+            cursor: not-allowed;
+         }
+
+
+        #feedback {
+            min-height: 1.2em;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        .correct { color: #28a745; }
+        .incorrect { color: #dc3545; }
+
+        #translation {
+            font-size: 1.5em;
+            color: #28a745;
+            margin-top: 10px;
+            display: none; /* Hidden initially */
+            word-break: break-word;
+        }
+
+        /* --- Button Styles --- */
+        .button-container {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 1em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            color: white;
+            background-color: #007bff;
+        }
+        button:hover:not(:disabled) {
+            opacity: 0.9;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* Specific Button Colors */
+        #check-answer-btn { background-color: #007bff; }
+        #check-answer-btn:hover:not(:disabled) { background-color: #0056b3; opacity: 1; }
+
+        #assessment-buttons button {
+             color: white;
+        }
+        #again-btn { background-color: #dc3545; }
+        #again-btn:hover:not(:disabled) { background-color: #c82333; opacity: 1; }
+        #hard-btn { background-color: #ffc107; color: #333; }
+        #hard-btn:hover:not(:disabled) { background-color: #e0a800; opacity: 1; }
+        #good-btn { background-color: #28a745; }
+        #good-btn:hover:not(:disabled) { background-color: #218838; opacity: 1; }
+        #easy-btn { background-color: #17a2b8; }
+        #easy-btn:hover:not(:disabled) { background-color: #138496; opacity: 1; }
+
+        #new-session-btn {
+             background-color: #6c757d;
+             margin-top: 10px;
+        }
+         #new-session-btn:hover:not(:disabled) {
+             background-color: #5a6268;
+             opacity: 1;
+         }
+
+        #show-answer-btn {
+            background-color: #6c757d;
+            color: white;
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 1em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        #show-answer-btn:hover:not(:disabled) {
+            background-color: #5a6268;
+            opacity: 1;
+        }
+
+        /* --- Utility Classes --- */
+        .hidden {
+            display: none !important;
+        }
+
+        .button-with-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .time-label {
+            font-size: 0.8em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <!-- Removed Title -->
-    <div class="progress-container">
-      <div class="progress-bar" id="progress-bar"></div>
+
+    <div id="app-container">
+        <div id="loading-error" class="hidden"></div> 
+
+        <div id="controls" class="hidden">
+             <button id="new-session-btn">Start New Session</button>
+        </div>
+
+        <div id="card-area" class="hidden">
+            <div id="card-display">
+                <div id="foreign-word"></div>
+                <div id="translation"></div>
+                <div id="answer-input-area">
+                     <input type="text" id="answer-input" placeholder="Type the translation..."> 
+                     <div id="feedback"></div> 
+                     <button id="check-answer-btn">Check Typing</button> <!-- Renamed -->
+                     <button id="show-answer-btn">Show Answer</button> <!-- New button -->
+                </div>
+            </div>
+
+            <div id="assessment-buttons" class="button-container hidden">
+                <div class="button-with-label">
+                    <span class="time-label">&lt;1m</span>
+                    <button id="again-btn">Again</button>
+                </div>
+                <div class="button-with-label">
+                    <span class="time-label">&lt;6m</span>
+                    <button id="hard-btn">Hard</button>
+                </div>
+                <div class="button-with-label">
+                    <span class="time-label">&lt;10m</span>
+                    <button id="good-btn">Good</button>
+                </div>
+                <div class="button-with-label">
+                    <span class="time-label">4d</span>
+                    <button id="easy-btn">Easy</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="status-message">Loading words...</div> 
+
+        <div id="session-complete" class="hidden">
+            🎉 Session Complete! Use "Start New Session" to go again. 🎉
+        </div>
     </div>
 
-    <div id="flashcard">
-      <p id="original-word">Loading...</p>
-      <p id="translated-word" style="display: none;"></p>
+    <script>
+        (function() { // IIFE to encapsulate scope
+            "use strict";
 
-      <div class="audio-controls">
-        <select id="language-select">
-          <option value="fr-FR">French</option>
-          <option value="en-US">English</option>
-        </select>
-        <button id="pronounce-btn"><i class="fas fa-volume-up"></i> Pronounce</button>
-      </div>
+            // --- Constants ---
+            const WORDS_FILE_PATH = 'words.json';
+            const LOCAL_STORAGE_KEYS = {
+                SHUFFLED_INDICES: 'flashcard_shuffledIndices',
+                CURRENT_INDEX: 'flashcard_currentIndex',
+                CARDS_LENGTH: 'flashcard_cardsLength' // Store length to invalidate progress if deck changes
+            };
 
-      <input type="text" id="user-answer" placeholder="Type translation here" autocomplete="off">
-      <div class="buttons">
-        <button id="submit-btn"><i class="fas fa-check"></i> Submit</button>
-        <button id="show-btn"><i class="fas fa-eye"></i> Show Translation</button>
-        <button id="hard-btn"><i class="fas fa-bookmark"></i> Mark as Hard</button>
-        <button id="easy-btn"><i class="fas fa-thumbs-up"></i> Mark as Easy</button>
-        <button id="next-btn" style="display: inline;"><i class="fas fa-arrow-right"></i> Next</button>
-      </div>
-      <p id="feedback"></p>
-<button id="reset-btn" style="background-color: #ff9800; color: white; margin-top: 10px;"><i class="fas fa-undo"></i> Reset</button>
-      <div class="stats">
-        <span id="remaining-count">Cards remaining: 0</span>
-        <span id="hard-count">Hard cards: 0</span>
-      </div>
-    </div>
-  </div>
-  
-  <script>
-    let availableVoices = [];
+            // --- DOM Elements ---
+            const loadingErrorEl = document.getElementById('loading-error');
+            const controlsEl = document.getElementById('controls');
+            const newSessionBtn = document.getElementById('new-session-btn');
+            const cardArea = document.getElementById('card-area');
+            const foreignWordEl = document.getElementById('foreign-word');
+            const answerInputArea = document.getElementById('answer-input-area');
+            const answerInput = document.getElementById('answer-input');
+            const feedbackEl = document.getElementById('feedback');
+            const translationEl = document.getElementById('translation');
+            const checkAnswerBtn = document.getElementById('check-answer-btn');
+            const showAnswerBtn = document.getElementById('show-answer-btn'); // New button
+            const assessmentButtons = document.getElementById('assessment-buttons');
+            const againBtn = document.getElementById('again-btn');
+            const hardBtn = document.getElementById('hard-btn');
+            const goodBtn = document.getElementById('good-btn');
+            const easyBtn = document.getElementById('easy-btn');
+            const statusMessage = document.getElementById('status-message');
+            const sessionCompleteMessage = document.getElementById('session-complete');
 
-    function isIOS() {
-      return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-    }
+            // --- State Variables ---
+            let cards = [];
+            let shuffledIndices = [];
+            let currentCardIndex = 0;
+            let currentCardData = null;
 
-    function speakText(text, langCode) {
-      if (speechSynthesis.speaking) {
-        speechSynthesis.cancel();
-      }
+            // --- Core Functions ---
 
-      const utterance = new SpeechSynthesisUtterance(text);
+            /**
+             * Shuffles an array in place using the Fisher-Yates algorithm.
+             * @param {Array} array The array to shuffle.
+             */
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+            }
 
-      let voice = null;
-      if (isIOS()) {
-        voice = availableVoices.find(v => v.lang === langCode && !v.name.toLowerCase().includes('spell'));
-      } else {
-        voice = availableVoices.find(v => v.lang === langCode);
-      }
+            /**
+            * Saves the current review session progress to localStorage.
+            */
+            function saveProgress() {
+                try {
+                    const nextIndexToSave = (currentCardIndex < shuffledIndices.length) ? currentCardIndex : shuffledIndices.length;
+                    localStorage.setItem(LOCAL_STORAGE_KEYS.SHUFFLED_INDICES, JSON.stringify(shuffledIndices));
+                    localStorage.setItem(LOCAL_STORAGE_KEYS.CURRENT_INDEX, nextIndexToSave.toString());
+                    localStorage.setItem(LOCAL_STORAGE_KEYS.CARDS_LENGTH, cards.length.toString());
+                } catch (error) {
+                    console.error("Error saving progress to localStorage:", error);
+                    statusMessage.textContent = "Warning: Could not save progress.";
+                }
+            }
 
-      if (!voice) {
-        voice = availableVoices.find(v => v.lang.startsWith(langCode.split('-')[0]));
-      }
+            /**
+            * Attempts to load review session progress from localStorage.
+            * Validates progress against the current number of loaded cards.
+            * @returns {boolean} True if valid progress was loaded, false otherwise.
+            */
+            function loadProgress() {
+                try {
+                    const savedIndices = localStorage.getItem(LOCAL_STORAGE_KEYS.SHUFFLED_INDICES);
+                    const savedIndex = localStorage.getItem(LOCAL_STORAGE_KEYS.CURRENT_INDEX);
+                    const savedLength = localStorage.getItem(LOCAL_STORAGE_KEYS.CARDS_LENGTH);
 
-      if (voice) {
-        utterance.voice = voice;
-      } else {
-        utterance.lang = langCode;
-      }
+                    if (savedIndices && savedIndex && savedLength) {
+                        const parsedIndices = JSON.parse(savedIndices);
+                        const parsedIndex = parseInt(savedIndex, 10);
+                        const parsedLength = parseInt(savedLength, 10);
 
-      speechSynthesis.speak(utterance);
-    }
+                        if (Array.isArray(parsedIndices) &&
+                            !isNaN(parsedIndex) &&
+                            !isNaN(parsedLength) &&
+                            parsedLength === cards.length &&
+                            parsedIndex >= 0 && parsedIndex <= cards.length &&
+                            parsedIndices.length === cards.length) {
 
-    function loadVoicesAndBind() {
-      availableVoices = speechSynthesis.getVoices();
-      const pronounceBtn = document.getElementById("pronounce-btn");
-      pronounceBtn.replaceWith(pronounceBtn.cloneNode(true));
+                            shuffledIndices = parsedIndices;
+                            currentCardIndex = parsedIndex;
+                            console.log(`Progress loaded. Resuming at index ${currentCardIndex} of ${cards.length}`);
+                            return true;
+                        } else {
+                            console.warn("Saved progress is invalid or for a different deck size. Clearing it.");
+                            clearSavedProgress();
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error loading progress from localStorage:", error);
+                    clearSavedProgress();
+                }
+                return false;
+            }
 
-      document.getElementById("pronounce-btn").addEventListener("click", () => {
-        const lang = document.getElementById("language-select").value;
-        const text = document.getElementById("translated-word").textContent.trim();
-        speakText(text, lang);
-      });
-    }
+            /** Clears saved progress from localStorage. */
+            function clearSavedProgress() {
+                try {
+                    localStorage.removeItem(LOCAL_STORAGE_KEYS.SHUFFLED_INDICES);
+                    localStorage.removeItem(LOCAL_STORAGE_KEYS.CURRENT_INDEX);
+                    localStorage.removeItem(LOCAL_STORAGE_KEYS.CARDS_LENGTH);
+                    console.log("Saved progress cleared.");
+                } catch (error) {
+                    console.error("Error clearing progress from localStorage:", error);
+                }
+            }
 
-    document.addEventListener("DOMContentLoaded", () => {
-      loadVoicesAndBind();
-      if (speechSynthesis.onvoiceschanged !== undefined) {
-        speechSynthesis.onvoiceschanged = loadVoicesAndBind;
-      }
-    });
-  </script>
+            /** Updates the UI to display the current card or completion message. */
+            function displayCard() {
+                // Reset UI state for a new card view
+                translationEl.style.display = 'none';
+                assessmentButtons.classList.add('hidden');
+                assessmentButtons.style.display = ''; // Reset potential direct style
+                checkAnswerBtn.style.display = 'inline-block';
+                checkAnswerBtn.disabled = false;
+                showAnswerBtn.style.display = 'inline-block'; // Show new button
+                answerInputArea.style.display = 'flex';
+                answerInput.value = '';
+                answerInput.disabled = false;
+                feedbackEl.textContent = '';
+                feedbackEl.className = 'feedback';
+                sessionCompleteMessage.classList.add('hidden');
 
-  <script src="app.js"></script>
+                // Check if session is finished
+                if (currentCardIndex >= shuffledIndices.length) {
+                    cardArea.classList.add('hidden');
+                    controlsEl.classList.remove('hidden');
+                    statusMessage.textContent = `Finished reviewing ${cards.length} cards.`;
+                    sessionCompleteMessage.classList.remove('hidden');
+                    saveProgress();
+                    return;
+                }
+
+                // Get current card data
+                const actualIndex = shuffledIndices[currentCardIndex];
+                currentCardData = cards[actualIndex];
+
+                // Validate card data
+                if (!currentCardData || typeof currentCardData.original === 'undefined' || typeof currentCardData.translated === 'undefined') {
+                    console.error('Invalid card data encountered:', currentCardData, 'at shuffled index', currentCardIndex, '(original index', actualIndex, ')');
+                    statusMessage.textContent = `Error: Invalid card data. Skipping.`;
+                    currentCardIndex++;
+                    saveProgress();
+                    displayCard();
+                    return;
+                }
+
+                // Display the card content
+                foreignWordEl.textContent = currentCardData.original;
+                translationEl.textContent = currentCardData.translated;
+
+                // Show card area and update status
+                cardArea.classList.remove('hidden');
+                controlsEl.classList.remove('hidden');
+                statusMessage.textContent = `Card ${currentCardIndex + 1} of ${cards.length}`;
+                answerInput.focus();
+            }
+
+            /** Handles checking the user's typed answer against the correct translation. */
+            function checkAnswer() {
+                if (!currentCardData) return;
+
+                const userAnswer = answerInput.value.trim().toLowerCase();
+                const correctAnswer = currentCardData.translated.trim().toLowerCase();
+
+                // Update UI to show feedback and answer
+                answerInput.disabled = true;
+                checkAnswerBtn.style.display = 'none';
+                showAnswerBtn.style.display = 'none'; // Hide new button
+
+                if (userAnswer === correctAnswer) {
+                    feedbackEl.textContent = "Correct!";
+                    feedbackEl.className = 'feedback correct';
+                } else {
+                    feedbackEl.textContent = `Incorrect. Correct: ${currentCardData.translated}`;
+                    feedbackEl.className = 'feedback incorrect';
+                }
+
+                translationEl.style.display = 'block';
+                assessmentButtons.classList.remove('hidden');
+                assessmentButtons.style.display = 'flex';
+            }
+
+            /** Handles showing the correct answer without checking the user's input. */
+            function showAnswer() {
+                if (!currentCardData) return;
+
+                // Update UI to show the answer
+                answerInput.disabled = true;
+                checkAnswerBtn.style.display = 'none';
+                showAnswerBtn.style.display = 'none'; // Hide new button
+
+                feedbackEl.textContent = `Correct: ${currentCardData.translated}`;
+                feedbackEl.className = 'feedback';
+                translationEl.style.display = 'block';
+                assessmentButtons.classList.remove('hidden');
+                assessmentButtons.style.display = 'flex';
+            }
+
+            /** Saves progress, increments card index, and displays the next card. */
+            function moveToNextCard() {
+                saveProgress();
+                currentCardIndex++;
+                displayCard();
+            }
+
+            /**
+            * Initializes a review session.
+            * @param {boolean} [forceNew=false] - If true, clears any saved progress and starts fresh.
+            */
+            function startReviewSession(forceNew = false) {
+                if (cards.length === 0) {
+                    statusMessage.textContent = "No cards loaded. Cannot start review.";
+                    cardArea.classList.add('hidden');
+                    controlsEl.classList.add('hidden');
+                    return;
+                }
+
+                if (forceNew) {
+                    clearSavedProgress();
+                }
+
+                const resumed = !forceNew && loadProgress();
+
+                if (!resumed) {
+                    currentCardIndex = 0;
+                    shuffledIndices = Array.from(cards.keys());
+                    shuffleArray(shuffledIndices);
+                    console.log("Starting a new review session.");
+                }
+
+                // Update UI
+                sessionCompleteMessage.classList.add('hidden');
+                statusMessage.textContent = `Loaded ${cards.length} cards. ${resumed ? 'Resuming session.' : 'Starting new session.'}`;
+                controlsEl.classList.remove('hidden');
+                displayCard();
+            }
+
+            /** Fetches words from JSON file and starts the session. */
+            async function loadWords() {
+                statusMessage.textContent = `Loading words from ${WORDS_FILE_PATH}...`;
+                loadingErrorEl.classList.add('hidden');
+                cardArea.classList.add('hidden');
+                controlsEl.classList.add('hidden');
+
+                try {
+                    const response = await fetch(WORDS_FILE_PATH, { cache: "no-store" });
+                    if (!response.ok) {
+                        throw new Error(`HTTP error ${response.status}. Could not fetch '${WORDS_FILE_PATH}'. Check file location and network.`);
+                    }
+                    const jsonData = await response.json();
+
+                    // Validate JSON structure
+                    if (!Array.isArray(jsonData)) {
+                        throw new Error("JSON data is not an array.");
+                    }
+                    if (jsonData.length > 0 && (typeof jsonData[0] !== 'object' || jsonData[0] === null || !jsonData[0].hasOwnProperty('original') || !jsonData[0].hasOwnProperty('translated'))) {
+                        throw new Error("JSON objects missing 'original' or 'translated' keys.");
+                    }
+
+                    cards = jsonData;
+                    startReviewSession();
+
+                } catch (error) {
+                    console.error("Error loading or parsing words.json:", error);
+                    loadingErrorEl.textContent = `Error: ${error.message}`;
+                    loadingErrorEl.classList.remove('hidden');
+                    statusMessage.textContent = "Failed to load cards. Cannot start.";
+                    cards = [];
+                    cardArea.classList.add('hidden');
+                    controlsEl.classList.add('hidden');
+                }
+            }
+
+            // --- Event Listeners ---
+            document.addEventListener('DOMContentLoaded', loadWords);
+
+            checkAnswerBtn.addEventListener('click', checkAnswer);
+
+            showAnswerBtn.addEventListener('click', () => {
+                translationEl.style.display = 'block'; // Show the translation
+                feedbackEl.textContent = ''; // Clear feedback
+                assessmentButtons.classList.remove('hidden'); // Show assessment buttons
+            });
+
+            answerInput.addEventListener('keypress', (event) => {
+                if (event.key === 'Enter' && !checkAnswerBtn.disabled && checkAnswerBtn.style.display !== 'none') {
+                    checkAnswer();
+                }
+            });
+
+            // Assessment buttons all trigger moving to the next card
+            againBtn.addEventListener('click', () => {
+                console.log("Selected: Again (<1m)");
+                moveToNextCard();
+            });
+
+            hardBtn.addEventListener('click', () => {
+                console.log("Selected: Hard (<6m)");
+                moveToNextCard();
+            });
+
+            goodBtn.addEventListener('click', () => {
+                console.log("Selected: Good (<10m)");
+                moveToNextCard();
+            });
+
+            easyBtn.addEventListener('click', () => {
+                console.log("Selected: Easy (4d)");
+                moveToNextCard();
+            });
+
+            // New session button clears progress and restarts
+            newSessionBtn.addEventListener('click', () => {
+                startReviewSession(true);
+            });
+
+        })(); // End of IIFE
+    </script>
+
 </body>
 </html>
